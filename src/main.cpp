@@ -27,7 +27,6 @@
 #endif
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
-
 RfLora rf;
 unsigned char txMode;
 constexpr int runPeriodMs = 3000;
@@ -165,15 +164,7 @@ void loop(void)
         baseMillis = now;
     }
 
-    if (txMode)
-    {
-        period = runPeriodMs;
-    }
-    else
-    {
-        period = syncing ? syncPeriodMs : runPeriodMs;
-    }
-
+    period = (txMode ? runPeriodMs : (syncing ? syncPeriodMs : runPeriodMs));
     cfgIdx = ((now - baseMillis) / period) % rf.cfgCnt;
 
     if (cfgIdx != lastCfgIdx)
