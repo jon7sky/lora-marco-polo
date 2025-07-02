@@ -23,6 +23,7 @@ class RfLora {
   public:
     typedef struct {
       const char *name;               // A short name
+      const char *shortDesc;
       const char *desc;               // A description of this config
       const int spreadFact;           // Spreading factor: Range is 6 to 12 (default is 7)
       const long bandwidth;           // Signal bandwidth: Supported values are 7.8E3, 10.4E3, 15.6E3, 20.8E3, 31.25E3, 41.7E3, 62.5E3, 125E3, 250E3 (default is 125E3)
@@ -43,38 +44,38 @@ class RfLora {
     const int txCnt = 5;
     const int numColumns = 2;
 
-    //  In the US902-928 an AU915-928 bands the data rates are as follows:
+    //  In the US902-928 and AU915-928 bands the data rates are as follows:
     //  (Link budgets are calculated using a transmit power of 20 dBm)
     //  
-    //  Data  Spread  Band    Max   Payload  Link
+    //  Data  Spread  Band-   Max   Payload  Link
     //  Rate  Factor  width   BPS    Bytes  Budget
-    //  ----------------------------------------
-    //  DR0   SF10    125kHz  980     19    152 dB
-    //  DR1   SF9     125kHz  1760    61    149 dB
-    //  DR2   SF8     125kHz  3125    133   146 dB
-    //  DR3   SF7     125kHz  5470    250   143 dB
-    //  DR4   SF8     500kHz  12500   250   140 dB <-- same as DR12
-    //  DR8   SF12    500kHz  980     41    151 dB
-    //  DR9   SF11    500kHz  1760    117   148 dB
-    //  DR10  SF10    500kHz  3900    230   146 dB
-    //  DR11  SF9     500kHz  7000    230   143 dB
-    //  DR12  SF8     500kHz  12500   230   140 dB
-    //  DR13  SF7     500kHz  21900   230   137 dB
+    //  ------------------------------------------
+    //  DR0   SF10    125kHz  980     11    152 dB
+    //  DR1   SF9     125kHz  1760    53    149 dB
+    //  DR2   SF8     125kHz  3125    125   146 dB
+    //  DR3   SF7     125kHz  5470    222   143 dB
+    //  DR4   SF8     500kHz  12500   222   140 dB <-- same as DR12
+    //  DR8   SF12    500kHz  980     53    151 dB
+    //  DR9   SF11    500kHz  1760    129   148 dB
+    //  DR10  SF10    500kHz  3900    222   146 dB
+    //  DR11  SF9     500kHz  7000    222   143 dB
+    //  DR12  SF8     500kHz  12500   222   140 dB
+    //  DR13  SF7     500kHz  21900   222   137 dB
 
     #define DEFAULT_CODING_RATE_DENOM   5   // Coding Rate: Value is 4/X, range of X is 5 to 8 (default is 5)
     #define DEFAULT_TX_POWER            17   // TX power: Range 2 to 20 (default is 17)
 
     cfg_t cfg[10] = {
-      { .name = "00", .desc = "SF10 125kHz", .spreadFact = 10, .bandwidth = KHZ(125), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER }, 
-      { .name = "01", .desc = "SF9  125kHz", .spreadFact = 9,  .bandwidth = KHZ(125), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
-      { .name = "02", .desc = "SF8  125kHz", .spreadFact = 8,  .bandwidth = KHZ(125), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
-      { .name = "03", .desc = "SF7  125kHz", .spreadFact = 7,  .bandwidth = KHZ(125), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
-      { .name = "08", .desc = "SF12 500kHz", .spreadFact = 12, .bandwidth = KHZ(500), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
-      { .name = "09", .desc = "SF11 500kHz", .spreadFact = 11, .bandwidth = KHZ(500), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
-      { .name = "10", .desc = "SF10 500kHz", .spreadFact = 10, .bandwidth = KHZ(500), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
-      { .name = "11", .desc = "SF9  500kHz", .spreadFact = 9,  .bandwidth = KHZ(500), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
-      { .name = "12", .desc = "SF8  500kHz", .spreadFact = 8,  .bandwidth = KHZ(500), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
-      { .name = "13", .desc = "SF7  500kHz", .spreadFact = 7,  .bandwidth = KHZ(500), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
+      { .name = "00", .shortDesc = "10/125", .desc = "SF10 125kHz", .spreadFact = 10, .bandwidth = KHZ(125), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER }, 
+      { .name = "01", .shortDesc = "09/125", .desc = "SF9  125kHz", .spreadFact = 9,  .bandwidth = KHZ(125), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
+      { .name = "02", .shortDesc = "08/125", .desc = "SF8  125kHz", .spreadFact = 8,  .bandwidth = KHZ(125), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
+      { .name = "03", .shortDesc = "07/125", .desc = "SF7  125kHz", .spreadFact = 7,  .bandwidth = KHZ(125), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
+      { .name = "08", .shortDesc = "12/500", .desc = "SF12 500kHz", .spreadFact = 12, .bandwidth = KHZ(500), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
+      { .name = "09", .shortDesc = "11/500", .desc = "SF11 500kHz", .spreadFact = 11, .bandwidth = KHZ(500), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
+      { .name = "10", .shortDesc = "10/500", .desc = "SF10 500kHz", .spreadFact = 10, .bandwidth = KHZ(500), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
+      { .name = "11", .shortDesc = "09/500", .desc = "SF9  500kHz", .spreadFact = 9,  .bandwidth = KHZ(500), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
+      { .name = "12", .shortDesc = "08/500", .desc = "SF8  500kHz", .spreadFact = 8,  .bandwidth = KHZ(500), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
+      { .name = "13", .shortDesc = "07/500", .desc = "SF7  500kHz", .spreadFact = 7,  .bandwidth = KHZ(500), .codingRateDenom = DEFAULT_CODING_RATE_DENOM, .txPower = DEFAULT_TX_POWER },
     };
     #endif // TEST_SFx_BWx_CR5
 

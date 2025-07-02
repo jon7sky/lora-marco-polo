@@ -33,6 +33,19 @@ constexpr int runPeriodMs = 3000;
 constexpr int syncPeriodMs = (runPeriodMs * 16);
 const char *blankLine = "                    ";
 
+void refresh_display()
+{
+    display.clearDisplay();
+    display.setCursor(0, LINE(0));
+    display.print(txMode ? "Marco" : "Polo");
+    for (int i = 0; i < rf.cfgCnt; i++)
+    {
+        display.setCursor((i % rf.numColumns) * (128 / rf.numColumns), LINE(3 + (i / rf.numColumns)));
+        display.print(rf.cfg[i].shortDesc);
+    }
+    display.display();
+}
+
 void setup()
 {
     char txt[32];
@@ -54,8 +67,7 @@ void setup()
     if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3c, false, false))
     { // Address 0x3C for 128x32
         Serial.println("SSD1306 allocation failed");
-        while (true)
-            ;
+        while (true);
     }
 
     // initialize Serial Monitor
@@ -136,15 +148,7 @@ void setup()
 #endif // MODE_CHANGE_BUTTON_PIN
     }
 
-    display.clearDisplay();
-    display.setCursor(0, LINE(0));
-    display.print(txMode ? "Marco" : "Polo");
-    for (int i = 0; i < rf.cfgCnt; i++)
-    {
-        display.setCursor((i % rf.numColumns) * (128 / rf.numColumns), LINE(3 + (i / rf.numColumns)));
-        display.print(rf.cfg[i].name);
-    }
-    display.display();
+    refresh_display();
 }
 
 void loop(void)
@@ -153,10 +157,14 @@ void loop(void)
     int cfgIdx;
     static unsigned long baseMillis = -1;
     static String msg = "";
-    static bool syncing = txMode ? false : true;
+    static bool syncing = true;
     static int cntSinceMsg = 0;
     unsigned long now;
     int period;
+    static int numRounds = 1;
+    static int goodRxCnt[32] = {0, };
+    static int lastButton = 0;
+    int button;
 
     now = millis();
     if (baseMillis == -1)
@@ -164,15 +172,35 @@ void loop(void)
         baseMillis = now;
     }
 
-    period = (txMode ? runPeriodMs : (syncing ? syncPeriodMs : runPeriodMs));
+    button = digitalRead(MODE_CHANGE_BUTTON_PIN);
+    if (button == 0 && lastButton == 1)
+    {
+        numRounds = 0;
+        memset(&goodRxCnt,  0, sizeof(goodRxCnt));
+        refresh_display();
+    }
+    lastButton = button;
+
+    //period = (txMode ? runPeriodMs : (syncing ? syncPeriodMs : runPeriodMs));
+    //cfgIdx = ((now - baseMillis) / period) % rf.cfgCnt;
+    period = runPeriodMs;
     cfgIdx = ((now - baseMillis) / period) % rf.cfgCnt;
+    if (!txMode && syncing)
+    {
+        cfgIdx = 0;
+    }
 
     if (cfgIdx != lastCfgIdx)
     {
+        if (!syncing && cfgIdx == 0)
+        {
+            numRounds++;
+        }
         if (lastCfgIdx >= 0)
         {
             display.setCursor((lastCfgIdx % rf.numColumns) * (128 / rf.numColumns), LINE(3 + (lastCfgIdx / rf.numColumns)));
-            display.print(rf.cfg[lastCfgIdx].name);
+            // display.print(rf.cfg[lastCfgIdx].name);
+            display.print(rf.cfg[lastCfgIdx].shortDesc);
             display.setCursor(0, LINE(1));
             display.print(blankLine);
             display.display();
@@ -184,14 +212,18 @@ void loop(void)
         display.print(rf.cfg[cfgIdx].desc);
         display.setTextColor(BLACK, WHITE);
         display.setCursor((cfgIdx % rf.numColumns) * (128 / rf.numColumns), LINE(3 + (cfgIdx / rf.numColumns)));
-        display.print(rf.cfg[cfgIdx].name);
+        // display.print(rf.cfg[cfgIdx].name);
+        display.print(rf.cfg[cfgIdx].shortDesc);
         display.setTextColor(WHITE, BLACK);
-        display.print("       ");
+        // display.print("       ");
         display.display();
         lastCfgIdx = cfgIdx;
 
         if (txMode)
         {
+            display.setCursor(0, LINE(2));
+            display.print("Round: ");
+            display.print(numRounds);
             display.setCursor(0, LINE(1));
             display.print("TX:Marco");
             display.display();
@@ -221,6 +253,9 @@ void loop(void)
             if (msg == "Polo")
             {
                 gotGoodMsg = true;
+                if (numRounds > 0) {
+                    goodRxCnt[cfgIdx]++;
+                }
             }
         }
         else
@@ -234,6 +269,7 @@ void loop(void)
                 display.setCursor((8 * 9), LINE(1));
                 display.print("TX:Polo");
                 gotGoodMsg = true;
+                goodRxCnt[cfgIdx]++;
             }
             display.display();
             baseMillis = now - (runPeriodMs * cfgIdx) - 1000;
@@ -241,13 +277,20 @@ void loop(void)
 
         if (gotGoodMsg)
         {
+#if 0
             int rssi = rf.getRssi();
             // int snr = rf.getSnr();
             char txt[20];
             sprintf(txt, "%4ddB", rssi);
             display.setCursor((cfgIdx % rf.numColumns) * (128 / rf.numColumns) + 16, LINE(3 + (cfgIdx / rf.numColumns)));
             display.print(txt);
-            display.display();
+#endif
+            if (numRounds)
+            {
+                display.setCursor((cfgIdx % rf.numColumns) * (128 / rf.numColumns) + 42, LINE(3 + (cfgIdx / rf.numColumns)));
+                display.print(goodRxCnt[cfgIdx]);
+                display.display();
+            }
             syncing = false;
             cntSinceMsg = 0;
         }
